@@ -1,10 +1,10 @@
 /*
- * Copyright 2022 ConsenSys Software Inc.
+ * Copyright 2023 ConsenSys Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
  * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-     *
+ *
  * Unless required by applicable law or agreed to in writing, software dis-
  * tributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,7 +16,7 @@ include "../util/galois_field.dfy"
 
 // The affine representation of a Short Weierstrass curve.  That is an elliptic
 // curve in where y^2 == x^3 + Ax + B, for some A and B where 4A^2 + 27B^2 != 0.
-module EllipticCurve refines GaloisField {
+module AffineCurve refines GaloisField {
     // Parameter defining the curve
     const A : Element;
     // Paramter defining the curve
@@ -89,7 +89,7 @@ module EllipticCurve refines GaloisField {
         }
 
         // Multiply a point by a given factor on the curve.
-        function Mul(n: u256) : (r:Point)
+        function Mul(n: nat) : (r:Point)
         // Underlying field must have prime order
         requires N > 3 && IsPrime(N)
         // Point being multiplied must be on the curve.
@@ -102,5 +102,19 @@ module EllipticCurve refines GaloisField {
                 if n % 2 == 1 then this.Add(res)
                 else res
         }
+    }
+
+    // Straightforward check: p * 1 == p
+    lemma LemmaMul1(p:Point)
+    requires N > 3 && IsPrime(N)
+    ensures p == p.Mul(1)
+    {
+    }
+
+    // Another check: p*2 == p+p
+    lemma LemmaAddMul2(p:Point)
+    ensures p.Add(p) == p.Mul(2)
+    requires N > 3 && IsPrime(N)
+    {
     }
 }

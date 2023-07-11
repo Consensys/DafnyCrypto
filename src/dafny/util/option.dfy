@@ -11,7 +11,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
 module Optional {
 
     datatype Option<T> = Some(v: T) | None {
