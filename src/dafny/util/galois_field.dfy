@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
  * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-     *
+ *
  * Unless required by applicable law or agreed to in writing, software dis-
  * tributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,8 +14,8 @@
 include "../util/option.dfy"
 include "../util/int.dfy"
 
-// Represents a finite field of a given order.
-module FiniteField {
+// Represents a finite field of a given order N.
+module GaloisField {
     import opened Int
 
     type pos = n:nat | n > 0 witness 1
@@ -67,3 +67,9 @@ module FiniteField {
         }
     }
 }
+
+// Example fields, primarily useful for testing.
+module GF2 refines GaloisField { const N := 2; }
+module GF3 refines GaloisField { const N := 3; }
+module GF4 refines GaloisField { const N := 4; }
+module GF5 refines GaloisField { const N := 5; }
