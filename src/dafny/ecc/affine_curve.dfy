@@ -11,16 +11,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-include "../util/int.dfy"
 include "../util/galois_field.dfy"
 
 // The affine representation of a Short Weierstrass curve.  That is an elliptic
 // curve in where y^2 == x^3 + Ax + B, for some A and B where 4A^2 + 27B^2 != 0.
 module AffineCurve refines GaloisField {
     // Parameter defining the curve
-    const A : Element;
+    const A : Element
     // Paramter defining the curve
-    const B : Element;
+    const B : Element
 
     // Equation defining what it means for a point (other than infinity) to be
     // on the elliptic curve.

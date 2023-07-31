@@ -1,7 +1,21 @@
+/*
+ * Copyright 2023 ConsenSys Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software dis-
+ * tributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 include "utils.dfy"
 include "../dafny/util/galois_field.dfy"
 
 import opened Utils
+import opened MathUtils
 
 // ============================================================================
 // GF2
@@ -48,13 +62,13 @@ method {:test} gf3_mul() {
 }
 
 method {:test} gf3_inverse() {
-    expect Int.IsPrime(GF3.N); // Dafny cannot easily prove this
+    expect IsPrime(GF3.N); // Dafny cannot easily prove this
     AssertAndExpect(GF3.Value(1).Inverse() == GF3.Value(1));
     AssertAndExpect(GF3.Value(2).Inverse() == GF3.Value(2));
 }
 
 method {:test} gf3_div() {
-    expect Int.IsPrime(GF3.N); // Dafny cannot easily prove this
+    expect IsPrime(GF3.N); // Dafny cannot easily prove this
     AssertAndExpect(GF3.Value(0).Div(GF3.Value(0)) == GF3.Value(0)); // should not exist?
     AssertAndExpect(GF3.Value(0).Div(GF3.Value(1)) == GF3.Value(0));
     AssertAndExpect(GF3.Value(0).Div(GF3.Value(2)) == GF3.Value(0));
@@ -103,7 +117,7 @@ method {:test} gf5_mul() {
 }
 
 method {:test} gf5_inverse() {
-    expect Int.IsPrime(GF5.N); // Dafny cannot easily prove this
+    expect IsPrime(GF5.N); // Dafny cannot easily prove this
     AssertAndExpect(GF5.Value(1).Inverse() == GF5.Value(1));
     AssertAndExpect(GF5.Value(2).Inverse() == GF5.Value(3));
     AssertAndExpect(GF5.Value(3).Inverse() == GF5.Value(2));
@@ -111,7 +125,7 @@ method {:test} gf5_inverse() {
 }
 
 method {:test} gf5_div() {
-    expect Int.IsPrime(GF5.N); // Dafny cannot easily prove this
+    expect IsPrime(GF5.N); // Dafny cannot easily prove this
     AssertAndExpect(GF5.Value(0).Div(GF5.Value(0)) == GF5.Value(0)); // should not exist?
     AssertAndExpect(GF5.Value(0).Div(GF5.Value(1)) == GF5.Value(0));
     AssertAndExpect(GF5.Value(0).Div(GF5.Value(2)) == GF5.Value(0));

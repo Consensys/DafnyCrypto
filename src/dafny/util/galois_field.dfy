@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 ConsenSys Software Inc.
+ * Copyright 2023 ConsenSys Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,16 +12,16 @@
  * under the License.
  */
 include "../util/option.dfy"
-include "../util/int.dfy"
+include "../util/math.dfy"
 
 // Represents a finite field of a given order N.
 module GaloisField {
-    import opened Int
+    import opened MathUtils
 
     type pos = n:nat | n > 0 witness 1
 
     // The number of elements in the given field.
-    const N : pos;
+    const N : pos
 
     // Define the raw set of field elements.
     type Field = n:nat | n < N
@@ -56,20 +56,20 @@ module GaloisField {
         requires this.n != 0 {
             var n := this.n;
             assert n < N;
-            Int.PrimeFieldsHaveInverse(n,N);
-            var inverse := Int.Inverse(n,N).Unwrap();
+            PrimeFieldsHaveInverse(n,N);
+            var inverse := MathUtils.Inverse(n,N).Unwrap();
             Value(inverse)
         }
 
         // Raise field element to a given power (mod N).
         function Pow(n: nat) : Element {
-            Value(Int.ModPow(this.n,n,N))
+            Value(ModPow(this.n,n,N))
         }
     }
 }
 
 // Example fields, primarily useful for testing.
-module GF2 refines GaloisField { const N := 2; }
-module GF3 refines GaloisField { const N := 3; }
-module GF4 refines GaloisField { const N := 4; }
-module GF5 refines GaloisField { const N := 5; }
+module GF2 refines GaloisField { const N := 2 }
+module GF3 refines GaloisField { const N := 3 }
+module GF4 refines GaloisField { const N := 4 }
+module GF5 refines GaloisField { const N := 5 }

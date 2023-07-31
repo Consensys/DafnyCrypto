@@ -21,19 +21,19 @@ include "../dafny/ecc/affine_curve.dfy"
 module E11F5 refines AffineCurve {
     import opened Utils
     // Specify the number of elements in the finite field
-    const N := 5;
+    const N := 5
     // Parameters for the curve
-    const A := Value(1);
-    const B := Value(1);
+    const A := Value(1)
+    const B := Value(1)
 
-    const P0_1 : Point := Pair(Value(0),Value(1));
-    const P0_4 : Point := Pair(Value(0),Value(4));
-    const P2_1 : Point := Pair(Value(2),Value(1));
-    const P2_4 : Point := Pair(Value(2),Value(4));
-    const P3_1 : Point := Pair(Value(3),Value(1));
-    const P3_4 : Point := Pair(Value(3),Value(4));
-    const P4_2 : Point := Pair(Value(4),Value(2));
-    const P4_3 : Point := Pair(Value(4),Value(3));
+    const P0_1 : Point := Pair(Value(0),Value(1))
+    const P0_4 : Point := Pair(Value(0),Value(4))
+    const P2_1 : Point := Pair(Value(2),Value(1))
+    const P2_4 : Point := Pair(Value(2),Value(4))
+    const P3_1 : Point := Pair(Value(3),Value(1))
+    const P3_4 : Point := Pair(Value(3),Value(4))
+    const P4_2 : Point := Pair(Value(4),Value(2))
+    const P4_3 : Point := Pair(Value(4),Value(3))
 
     // Check that Dafny agree's on all the members of the curve.
     method {:test} test_members() {
