@@ -12,7 +12,7 @@
  * under the License.
  */
 include "utils.dfy"
-include "../dafny/merkle/merkle.dfy"
+include "../dafny/util/merkle.dfy"
 
 // A very simple Merkle tree implementation using bytes as words.
 module ByteMerkle refines Merkle {
