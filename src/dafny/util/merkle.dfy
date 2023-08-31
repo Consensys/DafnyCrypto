@@ -14,13 +14,9 @@
 
 // Contains relevant algorithms for manipulating merkle roots, proofs and trees.
 module Merkle {
-    // An abstract datatype which defines both the representation of blob data,
-    // and the type of computed hashes.  This must support element-wise
-    // comparison.
-    type Word(==)
 
     // Defines the hash function used for Merklisation.
-    function Hash(lhs:Word, rhs:Word) : Word
+    function Hash<T(==)>(lhs:T, rhs:T) : T
 
     // Compute the Merkle root for a given blob of data.  If the data is a
     // single element, then that is returned.  Otherwise, the blob is divided
@@ -38,7 +34,7 @@ module Merkle {
     //        \        /
     //           root
     //
-    function Root(data: seq<Word>) : Word
+    function Root<T(==)>(data: seq<T>) : T
     requires |data| > 0 {
         if |data| == 1 then data[0]
         else
@@ -61,7 +57,7 @@ module Merkle {
     // The original blob was [A,B,C,D] and X, Y and Z are internal hashes with X
     // being the Merkle root.  Then, a proof that C was in the original blob
     // data is [Y,C,D].
-    function Verify(proof: seq<Word>) : Word
+    function Verify<T(==)>(proof: seq<T>) : T
     // A proof must contain at least one element!
     requires |proof| > 0
     decreases |proof| {
