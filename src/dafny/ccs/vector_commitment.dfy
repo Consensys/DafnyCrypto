@@ -12,9 +12,26 @@
  * under the License.
  */
 
-// A abstract representation of a Cryptographic Committment Scheme (CCS).
-// Specifically, given a vector of messages we can: (1) generate a committment
-// to it; (2) generate and/or verify a proof that an element is included in it.
+// A Vector Commitment Scheme is a cryptographic commitment scheme which
+// operates over message vectors (i.e. ordered sequences of data).  A vector
+// commitment can be opened at a specific position to prove that a given value
+// resided at that position in the original vector.  Opening such a commitment
+// should hide information about other elements in the vector (including how
+// many elements there were).  Furthermore, such commitments are said to exhibit
+// "positional binding" in that an adversay cannot open a commitment to two
+// different values at the same position.
+//
+// The scheme is parameterised over the types of messages, commitments and
+// openings.  Instances of this scheme must instantiate those types, and provide
+// implemenentations of the three functions for commiting, opening and verifying
+// commitments.  In addition, two key lemmas are provided which establish the
+// required relationship between these functions.
+//
+// References:
+//
+// * "Vector Commitments and their Applications", Dario Catalano1 and Dario
+//   Fiore.  In Proceedings of the conference on Practice and Theory of
+//   Public-Key Cryptography (PKC), 2013.
 abstract module VectorCommitmentScheme {
     // The type of messages held in vectors.  This must support equality
     // comparisons, and cannot be a heap reference.
@@ -29,29 +46,32 @@ abstract module VectorCommitmentScheme {
 
     // Generate a committment from a given vector.
     function Commit(vec: seq<Message>) : Commitment
+    // Cannot commit to an empty vector!
+    requires |vec| > 0
 
-    // Generate a proof that a given message is included at a given index in
-    // a vector.
-    function Open(vec: seq<Message>, i: nat, m: Message) : Opening
+    // Generate an opening for a given vector.  This is a proof that a given
+    // message is at a specific index in the vector.
+    function Open(vec: seq<Message>, i: nat) : Opening
     // Element in question must be at given position in vector.
-    requires i < |vec| && vec[i] == m
+    requires i < |vec|
 
-    // Verify a given value v was included in the original blob of data (as
-    // determined by the commitment) using a given inclusion proof.
+    // Verify a given value v was included in the original vector (as determined
+    // by the commitment) using a given opening.
     predicate Verify(c: Commitment, o: Opening, i: nat, m: Message)
 
     // Completeness requires that, given a valid commitment and opening for some
-    // vector, we can verify the opening against the commitment.  This provides
-    // one direction of proof for the commitment scheme (in fact, the easiest).
-    // It simply is a sanity check that we can, in fact, always verify our
-    // openings.
+    // vector, we can verify that opening against the commitment.  This provides
+    // one direction of proof for the commitment scheme (in fact, the easiest
+    // direction).  In essence, this is a sanity check that we can, in fact,
+    // always verify our openings.  If we could not always do this, then
+    // something would certainly be amiss.
     lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat, m: Message)
     // Value must be in the blob
     requires i < |vec| && vec[i] == m
     // Commitment must be valid for the given blob
     requires Commit(vec) == c
     // Opening must be valid for the given blob and value.
-    requires Open(vec,i,m) == o
+    requires Open(vec,i) == o
     // Verification must always succeed
     ensures Verify(c,o,i,m)
 }
