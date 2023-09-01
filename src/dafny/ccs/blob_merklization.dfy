@@ -52,9 +52,29 @@ module BlobMerklization refines VectorCommitmentScheme {
         i < |o| && o[i] == Hasher(m) && Merkle.Verify(o,HashJoin) == c
     }
 
-    lemma {:verify false} Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat, m: Message)
+    // An incomplete proof :)
+    lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat, m: Message)
     {
-        // FIXME: how to prove this?
+        var n := |vec| - 1;
+        // Hash original vector
+        var hvec := seq(|vec|, (i:nat) requires i<|vec| => Hasher(vec[i]));
+        // Determine pivot
+        var pivot := |vec| / 2;
+        if |hvec| == 1 { return; }
+        // Deconstruct commitment
+        var lh := Merkle.Root(hvec[..pivot],HashJoin);
+        var rh := Merkle.Root(hvec[pivot..],HashJoin);
+        assert c == HashJoin(lh,rh); // from Commit()
+        // Deconstruct proof
+        if i < pivot {
+            var lp := Merkle.Proof(hvec[..pivot],i,HashJoin);
+            assert o == lp + [rh]; // from Open()
+            assume false;
+        } else if i >= pivot {
+            var rp := Merkle.Proof(hvec[pivot..],i-pivot,HashJoin);
+            assert o == [lh] + rp; // from Open()
+            assume false;
+        }
     }
 
     // Defines the hash function used to convert messages into hashes.
