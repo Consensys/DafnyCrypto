@@ -13,13 +13,13 @@
  */
 
 // A Vector Commitment Scheme is a cryptographic commitment scheme which
-// operates over message vectors (i.e. ordered sequences of data).  A vector
-// commitment can be opened at a specific position to prove that a given value
-// resided at that position in the original vector.  Opening such a commitment
-// should hide information about other elements in the vector (including how
-// many elements there were).  Furthermore, such commitments are said to exhibit
-// "positional binding" in that an adversay cannot open a commitment to two
-// different values at the same position.
+// operates over message vectors (i.e. ordered sequences of data messages).  A
+// vector commitment can be opened at a specific position to prove that a given
+// value resided at that position in the original vector.  Opening such a
+// commitment should hide information about other elements in the vector
+// (including how many elements there were).  Furthermore, such commitments are
+// said to exhibit "positional binding" in that an adversay cannot open a
+// commitment to two different values at the same position.
 //
 // The scheme is parameterised over the types of messages, commitments and
 // openings.  Instances of this scheme must instantiate those types, and provide
@@ -32,6 +32,8 @@
 // * "Vector Commitments and their Applications", Dario Catalano1 and Dario
 //   Fiore.  In Proceedings of the conference on Practice and Theory of
 //   Public-Key Cryptography (PKC), 2013.
+//
+// * "SoK: Vector Commitments", Anca Nitulescu, Protocol Labs.
 abstract module VectorCommitmentScheme {
     // The type of messages held in vectors.  This must support equality
     // comparisons, and cannot be a heap reference.
@@ -56,7 +58,7 @@ abstract module VectorCommitmentScheme {
     requires i < |vec|
 
     // Verify a given value v was included in the original vector (as determined
-    // by the commitment) using a given opening.
+    // by the commitment) at a specific position using a given opening.
     predicate Verify(c: Commitment, o: Opening, i: nat, m: Message)
 
     // Completeness requires that, given a valid commitment and opening for some
@@ -65,13 +67,13 @@ abstract module VectorCommitmentScheme {
     // direction).  In essence, this is a sanity check that we can, in fact,
     // always verify our openings.  If we could not always do this, then
     // something would certainly be amiss.
-    lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat, m: Message)
+    lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat)
     // Value must be in the blob
-    requires i < |vec| && vec[i] == m
+    requires i < |vec|
     // Commitment must be valid for the given blob
     requires Commit(vec) == c
     // Opening must be valid for the given blob and value.
     requires Open(vec,i) == o
     // Verification must always succeed
-    ensures Verify(c,o,i,m)
+    ensures Verify(c,o,i,vec[i])
 }

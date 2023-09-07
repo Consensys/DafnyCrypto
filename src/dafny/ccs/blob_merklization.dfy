@@ -28,8 +28,8 @@ module BlobMerklization refines VectorCommitmentScheme {
     const EMPTY_HASH : Hash
     // A commitment in this scheme is simply a hash (i.e. a Merkle Proof).
     type Commitment = Hash
-    // An opening is a sequence of hashes which form a merkle proof.
-    type Opening = s:seq<Hash> | |s| > 0 witness [EMPTY_HASH]
+    // An opening is simply a merkle proof.
+    type Opening = Merkle.Proof<Hash>
 
     // Construct a commitment by computing its Merkle root.
     function Commit(vec: seq<Message>) : Commitment {
@@ -44,37 +44,25 @@ module BlobMerklization refines VectorCommitmentScheme {
         // Hash original vector
         var hvec := seq(|vec|, (i:nat) requires i<|vec| => Hasher(vec[i]));
         // Construct proof
-        Merkle.Proof(hvec,i,HashJoin)
+        Merkle.Generate(hvec,i,HashJoin)
     }
 
     // Verify an opening using the Merkle Proof
     predicate Verify(c: Commitment, o: Opening, i: nat, m: Message) {
-        i < |o| && o[i] == Hasher(m) && Merkle.Verify(o,HashJoin) == c
+        var last := |o.0|;
+        var hashes := o.1;
+        // FIXME: this is actually broken because it only verifies that m is
+        // contained within the original data, but does not verify the index
+        // position.
+        hashes[last] == Hasher(m) && Merkle.Verify(o,HashJoin) == c
     }
 
-    // An incomplete proof :)
-    lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat, m: Message)
+    lemma Completeness(vec: seq<Message>, c: Commitment, o: Opening, i: nat)
     {
-        var n := |vec| - 1;
         // Hash original vector
         var hvec := seq(|vec|, (i:nat) requires i<|vec| => Hasher(vec[i]));
-        // Determine pivot
-        var pivot := |vec| / 2;
-        if |hvec| == 1 { return; }
-        // Deconstruct commitment
-        var lh := Merkle.Root(hvec[..pivot],HashJoin);
-        var rh := Merkle.Root(hvec[pivot..],HashJoin);
-        assert c == HashJoin(lh,rh); // from Commit()
-        // Deconstruct proof
-        if i < pivot {
-            var lp := Merkle.Proof(hvec[..pivot],i,HashJoin);
-            assert o == lp + [rh]; // from Open()
-            assume false;
-        } else if i >= pivot {
-            var rp := Merkle.Proof(hvec[pivot..],i-pivot,HashJoin);
-            assert o == [lh] + rp; // from Open()
-            assume false;
-        }
+        // Easy with Merkle completeness lemma!
+        Merkle.Completeness(hvec,i,HashJoin);
     }
 
     // Defines the hash function used to convert messages into hashes.
