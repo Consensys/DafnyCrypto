@@ -14,17 +14,14 @@
 
 // Contains relevant algorithms for manipulating merkle roots, proofs and trees.
 module Merkle {
-    // An abstract datatype which defines both the representation of blob data,
-    // and the type of computed hashes.  This must support element-wise
-    // comparison.
-    type Word(==)
-
-    // Defines the hash function used for Merklisation.
-    function Hash(lhs:Word, rhs:Word) : Word
+    // Defines the type of a Merkle proof.
+    type Proof<T> = p:(seq<bool>,seq<T>) | |p.0| + 1 == |p.1|
+    // This isn't a "possibly empty type", but cannot otherwise show dafny.
+    witness *
 
     // Compute the Merkle root for a given blob of data.  If the data is a
     // single element, then that is returned.  Otherwise, the blob is divided
-    // evenly and the has of each sub root computed:
+    // evenly and the hash of each sub root computed:
     //
     //  0 1 2 3 4 5 6 7 8 9 A B
     // +-+-+-+-+-+-+-+-+-+-+-+-+
@@ -38,12 +35,46 @@ module Merkle {
     //        \        /
     //           root
     //
-    function Root(data: seq<Word>) : Word
+    function Root<T(==)>(data: seq<T>, hash: (T,T)->T) : T
+    // Cannot generate commitments for empty vectors.
     requires |data| > 0 {
         if |data| == 1 then data[0]
         else
             var pivot := |data| / 2;
-            Hash(Root(data[..pivot]),Root(data[pivot..]))
+            hash(Root(data[..pivot],hash),Root(data[pivot..],hash))
+    }
+
+    // Generate a proof of inclusion for the value at a given index in a blob
+    // of data.  This corresponds to a path through the Merkle Tree from the
+    // root to the given item.  For example, the proof that C is at index 2 in
+    // the array [A,B,C,D] looks like:
+    //
+    //        X
+    //       / \
+    //      /   \
+    //     Y     Z
+    //          / \
+    //         C   D
+    //
+    // Thus, the proof is ([true,false],[Y,D,C]), where Y=Hash(A,B).  Note that
+    // [true,false] is the path through the tree, where false (resp. true)
+    // signals the left (resp. right) branch is taken.
+    function Generate<T(==)>(data: seq<T>, i: nat, hash: (T,T)->T) : (p:Proof<T>)
+    // Cannot generate proofs for empty vectors.
+    requires |data| > 0 && i < |data|
+    // Last element of proof is ith element of vector.
+    ensures var last := |p.0|; data[i] == p.1[last]
+    {
+        var pivot := |data| / 2;
+        if |data| == 1 then ([],data)
+        else if i < pivot then
+            var lhs := Generate(data[..pivot],i,hash);
+            var rhs := Root(data[pivot..],hash);
+            ([false] + lhs.0, [rhs] + lhs.1)
+        else
+            var lhs := Root(data[..pivot],hash);
+            var rhs := Generate(data[pivot..],i-pivot,hash);
+            ([true] + rhs.0, [lhs] + rhs.1)
     }
 
     // Verify a proof of inclusion by calculating its corresponding root, such
@@ -61,15 +92,34 @@ module Merkle {
     // The original blob was [A,B,C,D] and X, Y and Z are internal hashes with X
     // being the Merkle root.  Then, a proof that C was in the original blob
     // data is [Y,C,D].
-    function Verify(proof: seq<Word>) : Word
-    // A proof must contain at least one element!
-    requires |proof| > 0
-    decreases |proof| {
-        if |proof| == 1 then proof[0]
+    function Verify<T(==)>(proof: Proof<T>, hash: (T,T)->T) : T
+    // Every step decreases the size of the proof by one.
+    decreases |proof.0|
+    {
+        var hashes := proof.1;
+        //
+        if |hashes| == 1
+        then
+            // Base case, only one hash remaining.
+            hashes[0]
         else
-            var m := |proof| - 2;
-            var n := |proof| - 1;
-            var acc := Hash(proof[m],proof[n]);
-            Verify(proof[..m]+[acc])
+            var path := proof.0;
+            // Extract subproof
+            var subproof : Proof := (path[1..],hashes[1..]);
+            // Compute hash for subproof
+            var subhash := Verify(subproof, hash);
+            // Apply path sign (left or right)
+            if path[0] then hash(hashes[0],subhash)
+            else hash(subhash,hashes[0])
+    }
+
+    lemma Completeness<T>(data: seq<T>, i: nat, hash: (T,T)->T)
+    // Not applicable for empty vectors.
+    requires |data| > 0 && i < |data|
+    // Verifying the original proof produces the root.
+    ensures Verify(Generate(data,i,hash), hash) == Root(data,hash)
+    {
+        // Apparently, Dafny can prove this automatically using its built-in
+        // induction tactic.
     }
 }
