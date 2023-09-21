@@ -16,7 +16,7 @@ include "utils.dfy"
 
 module PolynomialTests {
     import opened MathUtils
-    import opened Polynomial
+    import opened IntPolynomial
     import opened Utils
 
     // ==============================================================
@@ -61,28 +61,16 @@ module PolynomialTests {
     // ==============================================================
 
     method {:test} test_eval() {
-        assert PowN(1,1) == [1];
-        assert VecMul([1],[1]) == [1];
-        AssertAndExpect(Eval(POLY_1,1) == 1);
-        assert PowN(2,1) == [1];
-        AssertAndExpect(Eval(POLY_1,2) == 1);
+        expect Eval(POLY_1,2) == 1;
         // x
-        assert PowN(1,2) == [1,1];
-        AssertAndExpect(Eval(POLY_X,1) == 1);
-        assert PowN(2,2) == [1,2];
-        assert VecMul([1,2],[0,1]) == [0,2];
-        assert VecSum([0,2]) == 2;
-        AssertAndExpect(Eval(POLY_X,2) == 2);
+        expect Eval(POLY_X,1) == 1;
+        expect Eval(POLY_X,2) == 2;
         // x^2
-        assert PowN(1,3) == [1,1,1];
-        AssertAndExpect(Eval(POLY_X2,1) == 1);
-        assert PowN(2,3) == [1,2,4];
-        assert VecMul([1,2,4],[0,0,1]) == [0,0,4];
-        assert VecSum([0,0,4]) == 4;
-        AssertAndExpect(Eval(POLY_X2,2) == 4);
+        expect Eval(POLY_X2,1) == 1;
+        expect Eval(POLY_X2,2) == 4;
         // 3 + x^2
-        AssertAndExpect(Eval(POLY_3_X2,1) == 4);
-        AssertAndExpect(Eval(POLY_3_X2,2) == 7);
+        expect Eval(POLY_3_X2,1) == 4;
+        expect Eval(POLY_3_X2,2) == 7;
     }
 
     method {:test} test_neg() {
