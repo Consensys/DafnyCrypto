@@ -26,6 +26,12 @@ module GaloisField {
     // Define the raw set of field elements.
     type Field = n:nat | n < N
 
+    // Construct a field element from a nat.
+    function From(n:nat) : Element
+    requires n < N {
+        Element.Value(n)
+    }
+
     // A specific element in the field.
     datatype Element = Value(n:Field) {
         // Add two elements from the field together.
@@ -81,3 +87,4 @@ module GF2 refines GaloisField { const N := 2 }
 module GF3 refines PrimeField { const {:verify false} PN := 3 }
 module GF4 refines GaloisField { const N := 4 }
 module GF5 refines PrimeField { const {:verify false} PN := 5 }
+module GF251 refines PrimeField { const {:verify false} PN := 251 }

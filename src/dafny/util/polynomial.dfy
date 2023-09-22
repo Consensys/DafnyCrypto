@@ -104,12 +104,12 @@ abstract module Polynomial {
     // Multiply two polynomials together.
     function {:verify false} Mul(left: Polynomial, right: Polynomial) : (res:Polynomial)
     // For simplicity, requires that polynomial orders match
-    ensures |res| == |left| * |right|
+    ensures |res| == (|left| + |right|) - 1
     {
         if |left| == 0 then left
         else if |right| == 0 then right
         else
-            var n := |left| * |right|;
+            var n := (|left| + |right|) - 1;
             var rows := seq(|right|,(i:nat) requires i < |right| => MulTerm(left,(right[i],i),n));
             Sum(rows)
     }
@@ -164,11 +164,15 @@ abstract module Polynomial {
 // An invertible polynomial is a polynomial where every field value has a unique
 // inverse.  This allows the Lagrange interpolating polynomial to be constructed.
 abstract module InvertiblePolynomial refines Polynomial {
+
     // Compute the lagrange interpolating polynomial.
     function {:verify false} Interpolate(xs: seq<Field>, ys: seq<Field>) : Polynomial
+    // Cannot interpolate with less than two elements
+    requires |xs| > 1
+    // Must have same number of x/y positions.
     requires |xs| == |ys| {
         var n := |xs|;
-        var cols := seq(n,(i:nat) requires i < n => Mul(Unit((ys[i],0),n),LagrangeBasis(i,xs)));
+        var cols := seq(n,(i:nat) requires i < n => Mul(Unit((ys[i],0),1),LagrangeBasis(i,xs)));
         Sum(cols)
     }
 
@@ -253,3 +257,4 @@ abstract module PrimePolynomial refines InvertiblePolynomial {
 
 // Example prime polynomials
 module Gf5Polynomial refines PrimePolynomial { import GF = GF5 }
+module Gf251Polynomial refines PrimePolynomial { import GF = GF251 }
