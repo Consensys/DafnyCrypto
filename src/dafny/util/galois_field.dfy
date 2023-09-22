@@ -18,13 +18,19 @@ include "../util/math.dfy"
 module GaloisField {
     import opened MathUtils
 
-    type pos = n:nat | n > 0 witness 1
+    type pospos = n:nat | n > 1 witness 2
 
     // The number of elements in the given field.
-    const N : pos
+    const N : pospos
 
     // Define the raw set of field elements.
     type Field = n:nat | n < N
+
+    // Construct a field element from a nat.
+    function From(n:nat) : Element
+    requires n < N {
+        Element.Value(n)
+    }
 
     // A specific element in the field.
     datatype Element = Value(n:Field) {
@@ -68,8 +74,17 @@ module GaloisField {
     }
 }
 
+abstract module PrimeField refines GaloisField {
+    type prime = n:nat | IsPrime(n) witness *
+    // Define prime order
+    const PN : prime
+    // The number of elements in the given field.
+    const N := PN
+}
+
 // Example fields, primarily useful for testing.
 module GF2 refines GaloisField { const N := 2 }
-module GF3 refines GaloisField { const N := 3 }
+module GF3 refines PrimeField { const {:verify false} PN := 3 }
 module GF4 refines GaloisField { const N := 4 }
-module GF5 refines GaloisField { const N := 5 }
+module GF5 refines PrimeField { const {:verify false} PN := 5 }
+module GF251 refines PrimeField { const {:verify false} PN := 251 }

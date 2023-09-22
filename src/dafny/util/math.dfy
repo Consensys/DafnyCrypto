@@ -21,6 +21,37 @@ module MathUtils {
         if x >= 0 then x else -x
     }
 
+    // Sum a vector
+    function VecSum(vec: seq<int>) : int
+    {
+        if |vec| == 0 then 0
+        else
+            vec[0] + VecSum(vec[1..])
+    }
+
+    // Multiply two vectors
+    function VecMul(left: seq<int>, right: seq<int>) : (res:seq<int>)
+    requires |left| == |right|
+    ensures |res| == |left|
+    ensures forall k :: 0 <= k < |left| ==> res[k] == (left[k] * right[k])
+    {
+        if |left| == 0 then []
+        else
+            [left[0] * right[0]] + VecMul(left[1..],right[1..])
+    }
+
+    // Add two vectors
+    function VecAdd(left: seq<int>, right: seq<int>) : (res:seq<int>)
+    requires |left| == |right|
+    ensures |res| == |left|
+    ensures forall k :: 0 <= k < |left| ==> res[k] == (left[k] + right[k])
+    {
+        if |left| == 0 then []
+        else
+            [left[0] + right[0]] + VecAdd(left[1..],right[1..])
+    }
+
+
     // =========================================================
     // Exponent
     // =========================================================
@@ -51,6 +82,19 @@ module MathUtils {
         } else {
             lemma_pow2(k/2);
         }
+    }
+
+    // Another simple lemma about pow.
+    lemma {:verify false} LemmaPow(n: nat, m:nat)
+    requires m > 1
+    ensures Pow(n,m) == n * Pow(n,m-1) {
+        // FIXME: prove this!
+    }
+
+    // Calculate sequence [x^0, x^1, x^2, .. x^(n-1)].
+    function PowN(x: nat, n:nat) : (pwrs:seq<nat>)
+    ensures |pwrs| == n {
+        seq(n,(i:nat) => Pow(x,i))
     }
 
     /**
