@@ -84,11 +84,80 @@ module MathUtils {
         }
     }
 
+    lemma mul_assoc (x : nat, y : nat, z : nat)
+    ensures x * y * z == x * (y * z)
+    {}
+
+    lemma mul_comm (x : nat, y : nat)
+    ensures x * y == y * x 
+    {}
+
     // Another simple lemma about pow.
-    lemma {:verify false} LemmaPow(n: nat, m:nat)
-    requires m > 1
-    ensures Pow(n,m) == n * Pow(n,m-1) {
-        // FIXME: prove this!
+    lemma LemmaPow (n : nat, k : nat)      
+    ensures Pow(n, k + 2) == n * n * Pow(n, k)
+    ensures Pow(n, k + 1) == n * Pow(n, k)
+    {  
+      if k == 0 {} 
+      else {                     
+        assert H0 : Pow(n,k) == n * Pow(n, k - 1) by {LemmaPow(n, k-1); }   
+        calc {
+          Pow(n, k+1); 
+        == {LemmaPow(n, k-1);}  
+          n * n * Pow(n,k-1);
+        == {mul_assoc(n,n,Pow(n,k-1));}
+          n * (n * Pow(n,k-1));
+        == {reveal H0;}
+          n * Pow(n,k);
+        }
+        var x := Pow(n,k/2);
+        assert k/2 < k;
+        assert H1 : Pow(n, k/2 + 1) == n * x by {LemmaPow(n, k/2);}   
+        if k % 2 == 0 {                              
+          assert H2 : Pow(n, k) == x * x;          
+          calc {
+            Pow(n, k + 2);           
+          == 
+            Pow(n, k/2 + 1) * Pow(n, k/2 + 1) ;
+          == {reveal H1;}
+            (n * x) * (n * x);
+          == {mul_assoc((n * x), n, x);}
+            (n * x * n) * x;
+          == {mul_assoc(n,x,n);}
+            (n * (x * n)) * x;
+          == {mul_comm(x,n);}
+            (n * (n * x)) * x;
+          == {mul_assoc(n,n,x);}
+            ((n * n) * x) * x;
+          == {mul_assoc(n * n, x, x);}
+            n * n * (x * x);          
+          == {reveal H2;}
+            n * n * Pow(n,k);
+          }
+        } else {         
+          assert H2 : Pow(n, k) == x * x * n;                  
+          calc  {
+            Pow(n, k+2);
+          == 
+            Pow(n,k/2 + 1) * Pow(n,k/2 + 1) * n;
+          == {reveal H1;}
+            (n * x) * (n * x) * n;
+          == {mul_assoc(n*x, n*x, n);}
+            ((n * x) * (n * x)) * n;
+          == {mul_comm((n*x) * (n*x) ,n);}
+            n * ((n*x) * (n*x));
+           == {mul_assoc(n, x, n*x);}
+            n * (n * (x * (n * x)));
+          == {mul_comm(n,x);}
+            n * (n * (x * (x * n)));
+          == {mul_assoc(x,x,n);}
+            n * (n * (x * x * n));
+          == {reveal H2;}
+            n * (n * Pow(n,k));  
+          == {mul_assoc(n,n,Pow(n,k));}
+            n * n * Pow(n,k);
+          }        
+        }       
+      }
     }
 
     // Calculate sequence [x^0, x^1, x^2, .. x^(n-1)].
